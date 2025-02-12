@@ -1,0 +1,10 @@
+# this is a deliverable file for the final project build
+
+# I was able to run the docker file using an updated version of docker-compose (v2.21.0).
+  # this was all more compatable with the actual implementation of the build
+
+#  I then implemented an nginx server to host everything which is available to me via web browser
+
+# I found some documentation online for a javascript based tetris web page and I used that to actually have the game run
+  # HUUUUUUGE shoutout to jakesgordon on github (credit given in index.html file as well) for having a working version of open source JS tetris on his github
+
