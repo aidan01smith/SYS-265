@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Tetris</h1>
+    <div id="game-board"></div>
+    <script>
+        const boardWidth = 10;
+        const boardHeight = 20;
+        const board = Array.from({ length: boardHeight }, () => Array(boardWidth).fill(0));
+        const gameBoard = document.getElementById('game-board');
+
+        // Tetrominoes
+        const tetrominoes = [
+            [[1, 1, 1, 1]], // I
+            [[1, 1], [1, 1]], // O
+            [[0, 1, 0], [1, 1, 1]], // T
+            [[1, 1, 0], [0, 1, 1]], // S
+            [[0, 1, 1], [1, 1, 0]], // Z
+            [[1, 0, 0], [1, 1, 1]], // L
+            [[0, 0, 1], [1, 1, 1]]  // J
+        ];
+
+        let currentTetromino;
+        let currentPosition;
+        let currentRotation = 0;
+
+        // Initialize the game
+        function init() {
+            createBoard();
+            spawnTetromino();
+            setInterval(update, 1000);
+        }
+
+        // Create the game board
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            for (let y = 0; y < boardHeight; y++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                for (let x = 0; x < boardWidth; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell' + (board[y][x] ? ' filled' : '');
+                    row.appendChild(cell);
+                }
+                gameBoard.appendChild(row);
+            }
+        }
+
+        // Spawn a new tetromino
+        function spawnTetromino() {
+            const randomIndex = Math.floor(Math.random() * tetrominoes.length);
+            currentTetromino = tetrominoes[randomIndex];
+            currentPosition = { x: Math.floor(boardWidth / 2) - 1, y: 0 };
+            if (checkCollision()) {
+                alert('Game Over!');
+                board.forEach(row => row.fill(0));
+            }
+        }
+
+        // Check for collisions
+        function checkCollision() {
+            for (let y = 0; y < currentTetromino.length; y++) {
+                for (let x = 0; x < currentTetromino[y].length; x++) {
+                    if (
+                        currentTetromino[y][x] &&
+                        (board[currentPosition.y + y] && board[currentPosition.y + y][currentPosition.x + x]) !== 0
+                    ) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Update the game state
+        function update() {
+            if (!currentTetromino) return;
+
+            // Move the tetromino down
+            currentPosition.y++;
+            if (checkCollision()) {
+                currentPosition.y--;
+                mergeTetromino();
+                spawnTetromino();
+            }
+            createBoard();
+        }
+
+        // Merge the tetromino with the board
+        function mergeTetromino() {
+            for (let y = 0; y < currentTetromino.length; y++) {
+                for (let x = 0; x < currentTetromino[y].length; x++) {
+                    if (currentTetromino[y][x]) {
+                        board[currentPosition.y + y][currentPosition.x + x] = 1;
+                    }
+                }
+            }
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (event) => {
+            if (!currentTetromino) return;
+
+            if (event.key === 'ArrowLeft') {
+                currentPosition.x--;
+                if (checkCollision()) {
+                    currentPosition.x++;
+                }
+            } else if (event.key === 'ArrowRight') {
+                currentPosition.x++;
+                if (checkCollision()) {
+                    currentPosition.x--;
+                }
+            } else if (event.key === 'ArrowDown') {
+                currentPosition.y++;
+                if (checkCollision()) {
+                    currentPosition.y--;
+                    mergeTetromino();
+                    spawnTetromino();
+                }
+            } else if (event.key === 'ArrowUp') {
+                rotateTetromino();
+            }
+            createBoard();
+        });
+
+        // Rotate the tetromino
+        function rotateTetromino() {
+            const prevRotation = currentRotation;
+            currentRotation = (currentRotation + 1) % 4;
+            currentTetromino = rotateMatrix(currentTetromino);
+            if (checkCollision()) {
+                currentRotation = prevRotation;
+                currentTetromino = rotateMatrix(currentTetromino, 3);
+            }
+        }
+
+        // Rotate a matrix 90 degrees
+        function rotateMatrix(matrix, times = 1) {
+            for (let i = 0; i < times; i++) {
+                matrix = matrix[0].map((_, index) => matrix.map(row => row[index]).reverse());
+            }
+            return matrix;
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
